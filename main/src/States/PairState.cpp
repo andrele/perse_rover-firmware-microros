@@ -19,10 +19,6 @@ PairState::PairState() : State(), queue(10), audio((Audio*) Services.get(Service
 		}
 	}
 
-	if(WiFiAP* wifi = (WiFiAP*) Services.get(Service::WiFi)){
-		wifi->setHidden(true);
-		wifi->generateNewSSID();
-	}
 	auto* audio = (Audio*) Services.get(Service::Audio);
 	audio->setEnabled(true);
 }
@@ -89,11 +85,6 @@ void PairState::stopPair(){
 	if(!pairService) return;
 
 	pairService.reset();
-
-	if(WiFiAP* wifi = (WiFiAP*) Services.get(Service::WiFi)){
-		wifi->setHidden(true);
-		wifi->generateNewSSID();
-	}
 
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->on(LED::StatusYellow);

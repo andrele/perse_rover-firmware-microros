@@ -1,7 +1,7 @@
 #ifndef PERSE_ROVER_PAIRSERVICE_H
 #define PERSE_ROVER_PAIRSERVICE_H
 
-#include "Periph/WiFiAP.h"
+#include "Periph/WiFiSTA.h"
 #include "TCPServer.h"
 #include "Util/Threaded.h"
 
@@ -20,7 +20,7 @@ public:
 	State getState() const;
 
 private:
-	WiFiAP& wifi;
+	WiFiSTA& wifi;
 	TCPServer& tcp;
 
 	State state = State::Pairing;
