@@ -34,13 +34,8 @@ bool MicroROSService::isInitialized() const {
 }
 
 bool MicroROSService::onStart() {
-#if defined(CONFIG_MICRO_ROS_ESP_NETIF_WLAN) || defined(CONFIG_MICRO_ROS_ESP_NETIF_ENET)
-	esp_err_t err = uros_network_interface_initialize();
-	if(err != ESP_OK){
-		ESP_LOGE(TAG, "Failed to initialize network interface: %d", err);
-		return false;
-	}
-#endif
+	// Note: Network interface (WiFi AP) is already initialized by WiFiAP service
+	// so we don't call uros_network_interface_initialize() here
 
 	allocator = rcl_get_default_allocator();
 

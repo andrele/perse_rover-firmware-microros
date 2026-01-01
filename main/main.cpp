@@ -164,6 +164,11 @@ void init(){
 			delete lowBatteryService;
 		}
 
+		if(MicroROSService* microROS = (MicroROSService*) Services.get(Service::MicroROS)){
+			Services.set(Service::MicroROS, nullptr);
+			delete microROS;
+		}
+
 		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 			for(int i = 0; i < (uint8_t) LED::COUNT; i++){
 				led->off((LED) i);
