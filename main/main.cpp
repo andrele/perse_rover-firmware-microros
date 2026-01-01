@@ -7,7 +7,7 @@
 #include "Util/Services.h"
 #include "Util/stdafx.h"
 #include "Pins.hpp"
-#include "Periph/WiFiAP.h"
+#include "Periph/WiFiSTA.h"
 #include "Periph/I2C.h"
 #include "Periph/SPIFFS.h"
 #include "Devices/Input.h"
@@ -93,7 +93,7 @@ void init(){
 
 	auto spiffs = new SPIFFS();
 
-	auto wifi = new WiFiAP();
+	auto wifi = new WiFiSTA(settings->get().wifiSSID, settings->get().wifiPassword);
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPServer();
 	Services.set(Service::TCP, tcp);

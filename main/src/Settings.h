@@ -2,9 +2,12 @@
 #define PERSE_ROVER_SETTINGS_H
 
 #include <nvs.h>
+#include <cstring>
 
 struct SettingsStruct {
 	bool cameraHorizontalFlip = true;
+	char wifiSSID[32] = "RoverNetwork";
+	char wifiPassword[64] = "RoverRover";
 };
 
 class Settings {
