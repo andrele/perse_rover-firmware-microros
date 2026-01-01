@@ -43,6 +43,11 @@ static rcl_timer_t battery_timer;
 static sensor_msgs__msg__BatteryState battery_msg;
 static geometry_msgs__msg__Twist cmd_vel_msg;
 
+// Constants
+static constexpr int EXECUTOR_NUM_HANDLES = 2; // 1 timer + 1 subscription
+static constexpr int WIFI_INIT_WAIT_MS = 5000;
+static constexpr float BATTERY_FIELD_UNKNOWN = NAN;
+
 // Timer callback for publishing battery status
 void battery_timer_callback(rcl_timer_t* timer, int64_t last_call_time) {
     (void) last_call_time;
@@ -50,11 +55,11 @@ void battery_timer_callback(rcl_timer_t* timer, int64_t last_call_time) {
         Battery* battery = (Battery*) Services.get(Service::Battery);
         if (battery != nullptr) {
             battery_msg.percentage = (float)battery->getPerc() / 100.0f;
-            battery_msg.voltage = NAN; // Could be extended to get actual voltage
-            battery_msg.current = NAN;
-            battery_msg.capacity = NAN;
-            battery_msg.design_capacity = NAN;
-            battery_msg.charge = NAN;
+            battery_msg.voltage = BATTERY_FIELD_UNKNOWN;
+            battery_msg.current = BATTERY_FIELD_UNKNOWN;
+            battery_msg.capacity = BATTERY_FIELD_UNKNOWN;
+            battery_msg.design_capacity = BATTERY_FIELD_UNKNOWN;
+            battery_msg.charge = BATTERY_FIELD_UNKNOWN;
             battery_msg.power_supply_status = sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_DISCHARGING;
             battery_msg.power_supply_health = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNKNOWN;
             battery_msg.power_supply_technology = sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
@@ -114,7 +119,8 @@ void cmd_vel_subscription_callback(const void* msgin) {
             } else {
                 state.DriveDirection.dir = 2; // Backward
             }
-            state.DriveDirection.speed = sqrt(linear * linear + angular * angular);
+            // Use maximum of linear and angular for simpler calculation
+            state.DriveDirection.speed = fmax(fabs(linear), fabs(angular));
             if (state.DriveDirection.speed > 1.0f) {
                 state.DriveDirection.speed = 1.0f;
             }
@@ -130,7 +136,7 @@ void MicroROS::microRosTask(void* arg) {
     ESP_LOGI(TAG, "Starting micro-ROS task");
     
     // Wait for WiFi to be initialized
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(WIFI_INIT_WAIT_MS));
     
     rcl_allocator_t allocator = rcl_get_default_allocator();
     rclc_support_t support;
@@ -195,7 +201,7 @@ void MicroROS::microRosTask(void* arg) {
 
     // Create executor
     rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, EXECUTOR_NUM_HANDLES, &allocator));
     
     // Add timer and subscription to executor
     RCCHECK(rclc_executor_add_timer(&executor, &battery_timer));
@@ -204,18 +210,14 @@ void MicroROS::microRosTask(void* arg) {
     
     ESP_LOGI(TAG, "Executor initialized and spinning");
 
-    // Spin executor
+    // Spin executor indefinitely
     while(1) {
         rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
         usleep(10000);
     }
 
-    // Cleanup (will never be reached in this implementation)
-    RCCHECK(rcl_subscription_fini(&cmd_vel_subscriber, &node));
-    RCCHECK(rcl_publisher_fini(&battery_publisher, &node));
-    RCCHECK(rcl_node_fini(&node));
-
-    vTaskDelete(NULL);
+    // Note: Cleanup code below is never reached as the task runs indefinitely.
+    // If task termination is needed in the future, move this to the stop() method.
 }
 
 MicroROS::MicroROS() {
