@@ -19,7 +19,8 @@ enum class Service {
 	CameraController,
 	MotorDriveController,
 	LowBattery,
-	Settings
+	Settings,
+	MicroROS
 };
 
 class ServiceLocator {
