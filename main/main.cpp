@@ -33,6 +33,7 @@
 #include "Services/InactivityService.h"
 #include "Util/HWVersion.h"
 #include "Settings.h"
+#include "Services/MicroROSService.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -134,6 +135,10 @@ void init(){
 
 	auto inactivityService = new InactivityService();
 
+	auto microROS = new MicroROSService();
+	Services.set(Service::MicroROS, microROS);
+	microROS->start();
+
 	audio->play("/spiffs/General/PowerOn.aac", true);
 
 	stateMachine->transition<PairState>();
@@ -157,6 +162,11 @@ void init(){
 		if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattery)){
 			Services.set(Service::LowBattery, nullptr);
 			delete lowBatteryService;
+		}
+
+		if(MicroROSService* microROS = (MicroROSService*) Services.get(Service::MicroROS)){
+			Services.set(Service::MicroROS, nullptr);
+			delete microROS;
 		}
 
 		if(LEDService* led = (LEDService*) Services.get(Service::LED)){

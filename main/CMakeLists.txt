@@ -7,7 +7,7 @@ endif()
 file(GLOB_RECURSE LIBS "lib/*/src/**.cpp" "lib/*/src/**.c")
 set(LIBS_INCL "lib/glm/glm" "lib/opencv" "lib/libhelix-aac/src")
 
-idf_component_register(SRCS ${ENTRY} ${SOURCES} ${LIBS} INCLUDE_DIRS "src" ${LIBS_INCL})
+idf_component_register(SRCS ${ENTRY} ${SOURCES} ${LIBS} INCLUDE_DIRS "src" ${LIBS_INCL} REQUIRES micro_ros_espidf_component)
 
 add_prebuilt_library(opencv_imgproc "lib/opencv/libopencv_imgproc.a" PRIV_REQUIRES cxx)
 add_prebuilt_library(opencv_core "lib/opencv/libopencv_core.a" PRIV_REQUIRES cxx)

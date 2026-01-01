@@ -7,3 +7,6 @@ sdkconfig*
 !sdkconfig
 
 spiffs.bin
+
+# CodeQL metadata
+_codeql_detected_source_root
