@@ -7,3 +7,6 @@
 [submodule "components/Perse-Common"]
 	path = components/Perse-Common
 	url = https://github.com/CircuitMess/Perse-Common
+[submodule "components/micro_ros_espidf_component"]
+	path = components/micro_ros_espidf_component
+	url = https://github.com/micro-ROS/micro_ros_espidf_component.git
