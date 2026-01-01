@@ -11,6 +11,8 @@
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){ ESP_LOGW(TAG, "Failed status on line %d: %d", __LINE__, (int)temp_rc); }}
 
 static const char* TAG = "MicroROS";
+// Static instance pointer for timer callback. Safe because only one instance is created
+// during single-threaded initialization in main.cpp before the state machine starts.
 static MicroROSService* instance = nullptr;
 
 MicroROSService::MicroROSService() : Threaded("MicroROS", 16000, 5, 1) {
@@ -19,20 +21,24 @@ MicroROSService::MicroROSService() : Threaded("MicroROS", 16000, 5, 1) {
 
 MicroROSService::~MicroROSService() {
 	stop();
-	
+	cleanup();
+	instance = nullptr;
+}
+
+bool MicroROSService::isInitialized() const {
+	return initialized;
+}
+
+void MicroROSService::cleanup() {
 	if(initialized){
 		rclc_executor_fini(&executor);
 		rcl_timer_fini(&timer);
 		rcl_publisher_fini(&publisher, &node);
 		rcl_node_fini(&node);
 		rclc_support_fini(&support);
+		initialized = false;
 	}
-	
-	instance = nullptr;
 }
-
-bool MicroROSService::isInitialized() const {
-	return initialized;
 }
 
 bool MicroROSService::onStart() {
@@ -50,7 +56,7 @@ bool MicroROSService::onStart() {
 #endif
 
 	// Create init_options
-	RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator));
+	RCCHECK(rclc_support_init_with_options(&support, 0, nullptr, &init_options, &allocator));
 
 	// Create node
 	RCCHECK(rclc_node_init_default(&node, "perse_rover_node", "", &support));
@@ -83,14 +89,7 @@ bool MicroROSService::onStart() {
 }
 
 void MicroROSService::onStop() {
-	if(initialized){
-		rclc_executor_fini(&executor);
-		rcl_timer_fini(&timer);
-		rcl_publisher_fini(&publisher, &node);
-		rcl_node_fini(&node);
-		rclc_support_fini(&support);
-		initialized = false;
-	}
+	cleanup();
 }
 
 void MicroROSService::loop() {
@@ -105,9 +104,9 @@ void MicroROSService::loop() {
 void MicroROSService::timerCallback(rcl_timer_t* timer, int64_t last_call_time) {
 	(void)last_call_time;
 	
-	if(timer != NULL && instance != nullptr && instance->initialized){
+	if(timer != nullptr && instance != nullptr && instance->initialized){
 		ESP_LOGI(TAG, "Publishing: %d", (int)instance->msg.data);
-		RCSOFTCHECK(rcl_publish(&instance->publisher, &instance->msg, NULL));
+		RCSOFTCHECK(rcl_publish(&instance->publisher, &instance->msg, nullptr));
 		instance->msg.data++;
 	}
 }

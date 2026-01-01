@@ -18,6 +18,8 @@ private:
 	void loop() override;
 	bool onStart() override;
 	void onStop() override;
+	
+	void cleanup();
 
 	bool initialized = false;
 
