@@ -192,8 +192,9 @@ void MicroROS::microRosTask(void* arg) {
 
     // Initialize battery message
     sensor_msgs__msg__BatteryState__init(&battery_msg);
-    battery_msg.header.frame_id.data = (char*)"battery";
-    battery_msg.header.frame_id.size = strlen(battery_msg.header.frame_id.data);
+    static const char BATTERY_FRAME_ID[] = "battery";
+    battery_msg.header.frame_id.data = const_cast<char*>(BATTERY_FRAME_ID);
+    battery_msg.header.frame_id.size = strlen(BATTERY_FRAME_ID);
     battery_msg.header.frame_id.capacity = battery_msg.header.frame_id.size + 1;
 
     // Initialize cmd_vel message
@@ -215,9 +216,6 @@ void MicroROS::microRosTask(void* arg) {
         rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
         usleep(10000);
     }
-
-    // Note: Cleanup code below is never reached as the task runs indefinitely.
-    // If task termination is needed in the future, move this to the stop() method.
 }
 
 MicroROS::MicroROS() {
@@ -248,6 +246,10 @@ void MicroROS::begin() {
 
 void MicroROS::stop() {
     if (taskHandle != nullptr) {
+        // Note: This terminates the task but doesn't cleanly shutdown micro-ROS resources
+        // (publishers, subscribers, node, etc.). This is acceptable for the shutdown scenario
+        // where the entire system is powering down. For a clean restart scenario, proper
+        // micro-ROS cleanup would need to be implemented with task coordination.
         vTaskDelete(taskHandle);
         taskHandle = nullptr;
     }
