@@ -39,7 +39,6 @@ void MicroROSService::cleanup() {
 		initialized = false;
 	}
 }
-}
 
 bool MicroROSService::onStart() {
 	// Note: Network interface (WiFi AP) is already initialized by WiFiAP service
