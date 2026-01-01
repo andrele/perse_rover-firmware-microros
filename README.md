@@ -1,5 +1,25 @@
 # Perseverance Space Rover Firmware
 
+# WiFi Configuration
+
+This firmware has been refactored to use WiFi Station (STA) mode instead of Access Point (AP) mode. This change enables the rover to connect to an existing WiFi network, which is required for microROS integration.
+
+## Default WiFi Credentials
+
+The default WiFi credentials are stored in the Settings structure and can be configured:
+
+- **SSID**: `RoverNetwork`
+- **Password**: `RoverRover`
+
+These credentials are stored in NVS (Non-Volatile Storage) and persist across reboots. You can modify the default values in `main/src/Settings.h` or implement a configuration interface to change them at runtime.
+
+## WiFi Connection Behavior
+
+- The rover automatically connects to the configured WiFi network on startup
+- If the connection is lost, the rover will automatically attempt to reconnect
+- WiFi events (connect, disconnect, got IP) are posted to the event system for monitoring
+- The PairService now waits for WiFi connection before accepting TCP connections
+
 # Building
 
 To build the Rover firmware, you'll need the ESP-IDF. You can find the getting
