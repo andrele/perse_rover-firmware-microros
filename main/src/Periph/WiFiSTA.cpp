@@ -14,6 +14,7 @@ WiFiSTA::WiFiSTA(const char* ssid, const char* password) : connected(false), net
 	// Create event loop if it doesn't exist, otherwise use existing one
 	esp_err_t ret = esp_event_loop_create_default();
 	if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
+		ESP_LOGE(TAG, "Failed to create default event loop: %d", ret);
 		ESP_ERROR_CHECK(ret);
 	}
 	
@@ -33,7 +34,7 @@ WiFiSTA::WiFiSTA(const char* ssid, const char* password) : connected(false), net
 	createNetif();
 
 	const wifi_init_config_t cfg_wifi = WIFI_INIT_CONFIG_DEFAULT();
-	esp_wifi_init(&cfg_wifi);
+	ESP_ERROR_CHECK(esp_wifi_init(&cfg_wifi));
 
 	wifi_config_t cfg_sta = {};
 	strncpy((char*) cfg_sta.sta.ssid, ssid, sizeof(cfg_sta.sta.ssid) - 1);

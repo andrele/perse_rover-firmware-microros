@@ -14,6 +14,7 @@ PairService::~PairService(){
 }
 
 void PairService::loop(){
+	// Wait until WiFi is connected before accepting TCP connections
 	if(!wifi.isConnected()){
 		delayMillis(100);
 		return;
