@@ -10,8 +10,12 @@
 
 static const char* TAG = "WiFi_STA";
 
-WiFiSTA::WiFiSTA(const char* ssid, const char* password) : connected(false) {
-	ESP_ERROR_CHECK(esp_event_loop_create_default());
+WiFiSTA::WiFiSTA(const char* ssid, const char* password) : connected(false), netif(nullptr) {
+	// Create event loop if it doesn't exist, otherwise use existing one
+	esp_err_t ret = esp_event_loop_create_default();
+	if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
+		ESP_ERROR_CHECK(ret);
+	}
 	
 	// Register WiFi event handler
 	esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, [](void* arg, esp_event_base_t base, int32_t id, void* data){
@@ -57,7 +61,6 @@ bool WiFiSTA::isConnected() const {
 }
 
 std::string WiFiSTA::getIP() const {
-	esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
 	if (netif == nullptr) {
 		return "0.0.0.0";
 	}
@@ -107,8 +110,7 @@ void WiFiSTA::event(esp_event_base_t base, int32_t id, void* data) {
 	}
 }
 
-esp_netif_t* WiFiSTA::createNetif() {
-	esp_netif_t* netif = esp_netif_create_default_wifi_sta();
+void WiFiSTA::createNetif() {
+	netif = esp_netif_create_default_wifi_sta();
 	assert(netif);
-	return netif;
 }

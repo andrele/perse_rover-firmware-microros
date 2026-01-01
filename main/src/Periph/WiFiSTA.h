@@ -27,9 +27,10 @@ public:
 private:
 	esp_event_handler_instance_t wifiEvtHandler;
 	esp_event_handler_instance_t ipEvtHandler;
+	esp_netif_t* netif;
 	void event(esp_event_base_t base, int32_t id, void* data);
 
-	static esp_netif_t* createNetif();
+	void createNetif();
 	
 	bool connected;
 };
