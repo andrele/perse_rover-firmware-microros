@@ -21,6 +21,8 @@ MicroROSService::~MicroROSService() {
 	stop();
 	
 	if(initialized){
+		rclc_executor_fini(&executor);
+		rcl_timer_fini(&timer);
 		rcl_publisher_fini(&publisher, &node);
 		rcl_node_fini(&node);
 		rclc_support_fini(&support);
@@ -82,6 +84,8 @@ bool MicroROSService::onStart() {
 
 void MicroROSService::onStop() {
 	if(initialized){
+		rclc_executor_fini(&executor);
+		rcl_timer_fini(&timer);
 		rcl_publisher_fini(&publisher, &node);
 		rcl_node_fini(&node);
 		rclc_support_fini(&support);
