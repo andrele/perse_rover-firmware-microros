@@ -37,7 +37,9 @@ WiFiSTA::WiFiSTA(const char* ssid, const char* password) : connected(false), net
 
 	wifi_config_t cfg_sta = {};
 	strncpy((char*) cfg_sta.sta.ssid, ssid, sizeof(cfg_sta.sta.ssid) - 1);
+	cfg_sta.sta.ssid[sizeof(cfg_sta.sta.ssid) - 1] = '\0';
 	strncpy((char*) cfg_sta.sta.password, password, sizeof(cfg_sta.sta.password) - 1);
+	cfg_sta.sta.password[sizeof(cfg_sta.sta.password) - 1] = '\0';
 	cfg_sta.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
 	cfg_sta.sta.pmf_cfg.capable = true;
 	cfg_sta.sta.pmf_cfg.required = false;
@@ -112,5 +114,8 @@ void WiFiSTA::event(esp_event_base_t base, int32_t id, void* data) {
 
 void WiFiSTA::createNetif() {
 	netif = esp_netif_create_default_wifi_sta();
-	assert(netif);
+	if (netif == nullptr) {
+		ESP_LOGE(TAG, "Failed to create default WiFi STA interface");
+		ESP_ERROR_CHECK(ESP_FAIL);
+	}
 }

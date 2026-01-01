@@ -13,6 +13,8 @@ The default WiFi credentials are stored in the Settings structure and can be con
 
 These credentials are stored in NVS (Non-Volatile Storage) and persist across reboots. You can modify the default values in `main/src/Settings.h` or implement a configuration interface to change them at runtime.
 
+**Security Note**: WiFi credentials are stored in plain text in NVS as per standard ESP-IDF practices. For production deployments requiring enhanced security, consider implementing NVS encryption as documented in the [ESP-IDF NVS Encryption guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/storage/nvs_flash.html#nvs-encryption).
+
 ## WiFi Connection Behavior
 
 - The rover automatically connects to the configured WiFi network on startup
