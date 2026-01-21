@@ -7,7 +7,7 @@
 #include "Util/Services.h"
 #include "Util/stdafx.h"
 #include "Pins.hpp"
-#include "Periph/WiFiAP.h"
+#include "Periph/WiFiSTA.h"
 #include "Periph/I2C.h"
 #include "Periph/SPIFFS.h"
 #include "Devices/Input.h"
@@ -34,6 +34,7 @@
 #include "Services/InactivityService.h"
 #include "Util/HWVersion.h"
 #include "Settings.h"
+#include "Services/MicroROSService.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -93,7 +94,7 @@ void init(){
 
 	auto spiffs = new SPIFFS();
 
-	auto wifi = new WiFiAP();
+	auto wifi = new WiFiSTA(settings->get().wifiSSID, settings->get().wifiPassword);
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPServer();
 	Services.set(Service::TCP, tcp);
@@ -167,6 +168,11 @@ void init(){
 		if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattery)){
 			Services.set(Service::LowBattery, nullptr);
 			delete lowBatteryService;
+		}
+
+		if(MicroROSService* microROS = (MicroROSService*) Services.get(Service::MicroROS)){
+			Services.set(Service::MicroROS, nullptr);
+			delete microROS;
 		}
 
 		if(LEDService* led = (LEDService*) Services.get(Service::LED)){

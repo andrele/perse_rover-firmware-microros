@@ -4,9 +4,8 @@
 #include "Util/stdafx.h"
 
 PairService::PairService() : Threaded("PairService", 2 * 1024),
-							 wifi(*(WiFiAP*) Services.get(Service::WiFi)),
+							 wifi(*(WiFiSTA*) Services.get(Service::WiFi)),
 							 tcp(*(TCPServer*) Services.get(Service::TCP)){
-	wifi.setHidden(false);
 	start();
 }
 
@@ -15,7 +14,8 @@ PairService::~PairService(){
 }
 
 void PairService::loop(){
-	if(!wifi.isHidden()){
+	// Wait until WiFi is connected before accepting TCP connections
+	if(!wifi.isConnected()){
 		delayMillis(100);
 		return;
 	}
