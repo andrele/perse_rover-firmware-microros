@@ -22,6 +22,7 @@
 #include "Services/TCPServer.h"
 #include "Services/Comm.h"
 #include "Services/Audio.h"
+#include "Services/MicroROS.h"
 #include "States/PairState.h"
 #include "Services/StateMachine.h"
 #include "Services/LEDService.h"
@@ -135,9 +136,9 @@ void init(){
 
 	auto inactivityService = new InactivityService();
 
-	auto microROS = new MicroROSService();
-	Services.set(Service::MicroROS, microROS);
-	microROS->start();
+	auto microros = new MicroROS();
+	Services.set(Service::MicroROS, microros);
+	microros->begin();
 
 	audio->play("/spiffs/General/PowerOn.aac", true);
 
@@ -145,6 +146,11 @@ void init(){
 	stateMachine->begin();
 
 	battery->setShutdownCallback([](){
+		if(MicroROS* microros = (MicroROS*) Services.get(Service::MicroROS)){
+			Services.set(Service::MicroROS, nullptr);
+			delete microros;
+		}
+
 		if(TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
 			tcp->disconnect();
 		}
